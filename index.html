@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Alex app</title>
+    <link href="style.css" type="text/css"  rel="stylesheet" />
+</head>
+<body>
+<script src="core.min.js"></script>
+<script src="i18n.min.js"></script>
+<script src="addon.min.js"></script>
+<script src="app.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/json2/20150503/json2.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.js"></script>
+<!-- start -->
+<div id="carma" ng-app="app">
+    <ui-view class="app-view" name="app"></ui-view>
+</div>
+
+<script>
+
+    (function(){
+        "use strict";
+        angular
+                .module('app')
+                .constant('DefaultSettings', {"APP_TITLE":"Алексею","APP_DESCRIPTION":"говно эдишн от Олега","APP_API_URL":"https://maxmotors.firebaseio.com/carma/kits","APP_ALLOW_ADMIN":false,"CARMA_DISCOUNT_TYPE":0,"DEFAULT_STATE":{"state":"app.carma.kits.kit","params":{"kitId":"sedan"}},"DEFAULT_ROUTE":"/app/carma/kits/sedan","BACKEND_TYPE":"FIRE","APP_PROMO":true,"version":"3.0.0","LOGIN_URL":"/app/login","I18N_URL":""})
+        ;
+
+    })();
+
+</script>
+<!-- end -->
+</body>
+</html>
