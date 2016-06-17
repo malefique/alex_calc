@@ -43,6 +43,39 @@ define(['assets/js/knockout-min.js'], function(ko) {
         self.title = ko.observable(item.title);
     }
 
+    function Discount(item,obj){
+        var self = this;
+        self.active = ko.observable(item.active);
+        self.title = ko.observable(item.title);
+        self.ids = ko.observableArray(item.ids);
+        self.percent = ko.observable(item.percent);
+        self.summary = ko.computed({
+            read: function () {
+                var price = 0;
+                for(var j in self.ids()){
+                    for( var i in obj.prices()){
+                        if(obj.prices()[i].id() == self.ids()[j].id){
+                            switch(self.ids()[j].type){
+                                case 1:
+                                    price +=parseInt(obj.prices()[i].norma() * obj.prices()[i].paint());
+                                    break
+                                case 2:
+                                    price +=parseInt(obj.prices()[i].norma() * obj.prices()[i].repair());
+                                    break;
+                                case 3:
+                                    price +=parseInt(obj.prices()[i].norma() * obj.prices()[i].replacement());
+                                    break;
+                            }
+                        }
+                    }
+                }
+                console.log(price);
+                return (price - (price * self.percent() / 100)).toFixed(1);
+            },
+            owner: self
+        });
+    }
+
     return function indexModel() {
         var self = this;
         self.loadResources = function(callback){
@@ -65,15 +98,24 @@ define(['assets/js/knockout-min.js'], function(ko) {
             { id: 'N'}
         ]);
 
+        self.workTypes = ko.observableArray([
+            { id: 1, title: 'Покраска'},
+            { id: 2, title: 'Ремонт'},
+            { id: 3, title: 'Замена'}
+        ]);
+
         self.notifications = ko.observable(false);
 
         self.currentLeftMenuId = ko.observable(1);
         self.currentCarType = ko.observable(1);
         self.kit = ko.observable();
         self.prices = ko.observableArray();
+        self.discounts = ko.observableArray();
+
         self.modal = ko.observable({
-            title: ko.observable(''),
-            body: ko.observable()
+            title: ko.observable(),
+            body: ko.observable(),
+            type: ko.observable(1)
         });
 
         self.toggleActive = function(menuItem){
@@ -106,6 +148,18 @@ define(['assets/js/knockout-min.js'], function(ko) {
                             });
                             break;
                         case 3:
+                            $.getJSON( self.carTypes()[self.currentCarType()-1].dataUrl).done(function( data ) {
+                                var temp = [];
+                                for(var k in data.elements)
+                                    temp.push(new Price(data.elements[k]));
+                                self.prices([]);
+                                self.prices.push.apply(self.prices,temp);
+                                temp = [];
+                                for(var k in data.discounts)
+                                    temp.push(new Discount(data.discounts[k],self));
+                                self.discounts([]);
+                                self.discounts.push.apply(self.discounts,temp);
+                            });
                             break;
                     }
                 });
@@ -120,6 +174,9 @@ define(['assets/js/knockout-min.js'], function(ko) {
                 self.toggleActive(self.leftMenu()[self.currentLeftMenuId()-1]);
             }
             else{
+                self.modal().title('Сообщение');
+                self.modal().title('Сохранить изменения?');
+                self.modal().type(1);
                 $('.modal').modal('show');
             }
         };
@@ -140,14 +197,42 @@ define(['assets/js/knockout-min.js'], function(ko) {
             $.post('/calc_admin/xhr.php', {
                 kits: ko.toJSON(self.kit()),
                 prices: ko.toJSON(self.prices()),
+                discounts: ko.toJSON(self.discounts()),
                 car_type: self.currentCarType()
             },function(r){
-                console.log(r);
+                //console.log(r);
                 if(r.ok){
-                    console.log(r.ok);
+                    self.modal().title('Сообщение');
+                    self.modal().body('Изменения сохранены');
+                    self.modal().type(2);
+                    $('.modal').modal('show');
                     self.turnOffNotifications();
                 }
             },"json");
+        }
+
+        self.addDiscount = function(){
+            self.discounts.push(new Discount({active: 'Y',title: '',ids: [], percent: 0},self));
+            self.notifications(true);
+        }
+
+        self.removeDiscount = function(Discount){
+            self.discounts.remove(Discount);
+            self.notifications(true);
+        }
+
+        self.addDiscountId = function(Discount){
+            Discount.ids.push({id: ko.observable(1),type: ko.observable(1)});
+            self.notifications(true);
+        }
+
+        self.removeDiscountId = function(DiscountId){
+            $.each(self.discounts(), function() { this.ids.remove(DiscountId) });
+        }
+
+        self.editDiscountId = function(DiscountId){
+            console.log('fired');
+            self.notifications(true);
         }
 
 

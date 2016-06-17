@@ -35,17 +35,20 @@
 </nav>
 <div class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content" data-bind="with: modal()">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title">Сообщение</h4>
+                <h4 class="modal-title" data-bind="text: title"></h4>
             </div>
             <div class="modal-body">
-                <p>Сохранить изменения?</p>
+                <p data-bind="text: body"></p>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" data-bind="visible: type() == 1">
                 <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click: $root.turnOffNotifications">Нет</button>
                 <button type="button" class="btn btn-primary" data-bind="click: $root.saveChanges">Да</button>
+            </div>
+            <div class="modal-footer" data-bind="visible: type() == 2">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Ок</button>
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -70,8 +73,10 @@
                         <h4 data-bind="text: title"></h4>
                     </div>
                 <!-- /ko -->
+                <div class="col-md-12">
+                    <button type="button" class="btn btn-primary" data-bind="visible: $root.notifications(), click: $root.saveChanges">Сохранить изменения</button>
+                </div>
             </div>
-                    <!-- <h2 class="sub-header" data-bind="text: kit().title"></h2> -->
             <div class="table-responsive" data-bind="visible: currentLeftMenuId() == 1">
                 <table class="table table-striped">
                     <tr>
@@ -158,7 +163,56 @@
                     <!-- /ko -->
                 </table>
             </div>
-            <div class="col-md-12"><button type="button" class="btn btn-primary" data-bind="visible: $root.notifications(), click: $root.saveChanges">Сохранить изменения</button></div>
+            <div class="table-responsive" data-bind="visible: currentLeftMenuId() == 3">
+                <button type="button" class="btn btn-primary" data-bind="click: $root.addDiscount">Добавить скидку</button>
+                <table class="table table-striped">
+                    <tr>
+                        <th>status</th>
+                        <th>title</th>
+                        <th>товары</th>
+                        <th>скидка %</th>
+                        <th>итого</th>
+                        <th>#</th>
+                    </tr>
+                    <!-- ko foreach: discounts() -->
+                        <tr>
+                            <td>
+                                <select class="form-control" data-bind="options: $root.activeTypes,optionsValue: 'id', optionsText: 'id',value: active, event: {change: $root.editDiscount}">
+                                </select>
+                            </td>
+                            <td>
+                                <input class="form-control" type="text" data-bind = "textInput: title,event: {change: $root.editDiscount}" />
+                            </td>
+                            <td>
+                                <!-- ko foreach: ids -->
+                                    <div class="row">
+                                        <div class="col-xs-5">
+                                            <select class="form-control" data-bind="options: $root.prices,optionsValue: 'id', optionsText: 'title',value: id, event: {change: $root.editDiscountId}">
+                                            </select>
+                                        </div>
+                                        <div class="col-xs-5">
+                                            <select class="form-control" data-bind="options: $root.workTypes,optionsValue: 'id', optionsText: 'title',value: type, event: {change: $root.editDiscountId}">
+                                            </select>
+                                        </div>
+                                        <div class="col-xs-2">
+                                            <button type="button" class="btn btn-danger" data-bind="click: $root.removeDiscountId">-</button>
+                                        </div>
+                                    </div>
+                                <!-- /ko -->
+                                <button type="button" class="btn btn-primary" data-bind="click: $root.addDiscountId">+</button>
+                            </td>
+                            <td>
+                                <input class="form-control" type="text" data-bind = "textInput: percent,event: {change: $root.editDiscount}" />
+                            </td>
+                            <td data-bind="text: summary">
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-danger" data-bind="click: $root.removeDiscount">-</button>
+                            </td>
+                        </tr>
+                    <!-- /ko -->
+                </table>
+            </div>
         </div>
     </div>
 </div>
